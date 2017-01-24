@@ -49,8 +49,8 @@ public class ChronicDiseases {
 
     public static void main( String args[] ) throws InterruptedException, JsonProcessingException, IOException{
         prepare();
-        File file = new File( "src/main/resources/chronicdiseases/schema.json" );
-        IntegrationBase.integrate( "src/main/resources/chronicdiseases/us_chronic_disease_indicators.csv", JsonSchemaReader.read( file ), et, es );
+        File file = new File( "schema.json" );
+        IntegrationBase.integrate( "us_chronic_disease_indicators.csv", JsonSchemaReader.read( file ), et, es );
     }
 
 }
