@@ -171,6 +171,6 @@ public class Slc2 {
 
     public static void main( String args[] ) throws InterruptedException{
         prepare();
-        IntegrationBase.integrate( "src/main/resources/Stolen_Vehicles_2012_Salt_Lake_City.csv", epts, et, es );
+        IntegrationBase.integrate( "Stolen_Vehicles_2012_Salt_Lake_City.csv", epts, et, es );
     }
 }

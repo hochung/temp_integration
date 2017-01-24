@@ -55,8 +55,7 @@ public class NycDemographics {
 
     public static void main( String args[] ) throws InterruptedException, JsonProcessingException, IOException{
         prepare();
-        String fileName = "nyc/nyc_schema.json";
-        File file = new File( IntegrationBase.class.getClassLoader().getResource( fileName ).getPath() );
-        IntegrationBase.integrate( "nyc/nyc_demo_stats.csv", JsonSchemaReader.read( file ), et, es );
+        File file = new File( "nyc_schema.json" );
+        IntegrationBase.integrate( "nyc_demo_stats.csv", JsonSchemaReader.read( file ), et, es );
     }
 }
