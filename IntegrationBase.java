@@ -68,8 +68,8 @@ public class IntegrationBase {
         environment = Environment.LOCAL;
         */
 
-//        environment = Environment.PRODUCTION;
-        environment = Environment.LOCAL;
+        environment = Environment.PRODUCTION;
+//        environment = Environment.LOCAL;
     }
 
     public static void integrate( String jwtToken, String filePath, Set<EnhancedPropertyType> epts, EntityType et, EntitySet es ) throws InterruptedException {
