@@ -43,7 +43,6 @@ public class IntegrationBase {
             "PTmyExdBckHAiyOjh4w2MqSIUGWWEdf8",
             "loom.auth0.com" );
     private static final AuthenticationAPIClient           client              = auth0.newAuthenticationAPIClient();
-    private static String jwtToken;
     private static Environment environment;
     private static EdmApi edm;
 
@@ -59,28 +58,31 @@ public class IntegrationBase {
                 .master( "local[5]" )
                 .appName( "test" )
                 .getOrCreate();
+        
+        /**        
         AuthenticationRequest request = client.login( "support@kryptnostic.com", "abracadabra" )
                 .setConnection( "Tests" )
                 .setScope( "openid email nickname roles user_id" );
         jwtToken = request.execute().getIdToken();
         logger.info( "Using the following idToken: Bearer {}" , jwtToken );
         environment = Environment.LOCAL;
-        /**
-        jwtToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhvY2h1bmdAa3J5cHRub3N0aWMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImFwcF9tZXRhZGF0YSI6eyJyb2xlcyI6WyJ1c2VyIiwiYWRtaW4iLCJBdXRoZW50aWNhdGVkVXNlciJdfSwibmlja25hbWUiOiJob2NodW5nIiwicm9sZXMiOlsidXNlciIsImFkbWluIiwiQXV0aGVudGljYXRlZFVzZXIiXSwidXNlcl9pZCI6Imdvb2dsZS1vYXV0aDJ8MTEzOTE0MjkyNjQyNzY2ODgyOTk0IiwiaXNzIjoiaHR0cHM6Ly9sb29tLmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDExMzkxNDI5MjY0Mjc2Njg4Mjk5NCIsImF1ZCI6Ikt2d3NFVGFVeHVYVmpXMmNtejJMYmRxWFFCZFlzNndIIiwiZXhwIjoxNDg1MzE0MDQ3LCJpYXQiOjE0ODUyNzgwNDd9.WdFEc5K1WpAroRtM4iXP0bcvm0W-jtTfoR7tgH-1ykg";
-        environment = Environment.PRODUCTION;
         */
-        Retrofit retrofit = RetrofitFactory.newClient( environment, () -> jwtToken );
-        edm = retrofit.create( EdmApi.class );
+
+//        environment = Environment.PRODUCTION;
+        environment = Environment.LOCAL;
     }
 
-    public static void integrate( String filePath, Set<EnhancedPropertyType> epts, EntityType et, EntitySet es ) throws InterruptedException {
+    public static void integrate( String jwtToken, String filePath, Set<EnhancedPropertyType> epts, EntityType et, EntitySet es ) throws InterruptedException {
+        Retrofit retrofit = RetrofitFactory.newClient( environment, () -> jwtToken );
+        edm = retrofit.create( EdmApi.class );
+
         createPropertyTypes( epts );
         UUID etId = createEntityType( et );
         createEntitySet( es, etId );
         
 //        String path = new File( IntegrationBase.class.getClassLoader().getResource( fileName ).getPath() ).getAbsolutePath();
         String path = new File( filePath ).getAbsolutePath();
-        runIntegration( path, epts, et, es );
+        runIntegration( jwtToken, path, epts, et, es );
     }
     
     private static void createPropertyTypes( Set<EnhancedPropertyType> epts ){
@@ -119,17 +121,20 @@ public class IntegrationBase {
         return id;
     }
     
-    private static Map<String, UUID> createEntitySet( EntitySet es, UUID entityTypeId){
-        return edm.createEntitySets( ImmutableSet.of( new EntitySet(
+    private static void createEntitySet( EntitySet es, UUID entityTypeId){
+        Map<String, UUID> map = edm.createEntitySets( ImmutableSet.of( new EntitySet(
                 entityTypeId,
                 es.getName(),
                 es.getTitle(),
                 Optional.of( es.getDescription() )
                 ) ) );
-
+        if( map == null ){
+            logger.error( "Entity Set already exists" );
+            // throw new IllegalArgumentExeption( "Entity Set already exists" );
+        }
     }
 
-    private static void runIntegration( String path, Set<EnhancedPropertyType> epts, EntityType et, EntitySet es ) throws InterruptedException{
+    private static void runIntegration( String jwtToken, String path, Set<EnhancedPropertyType> epts, EntityType et, EntitySet es ) throws InterruptedException{
         Dataset<Row> payload = sparkSession
                 .read()
                 .format( "com.databricks.spark.csv" )
